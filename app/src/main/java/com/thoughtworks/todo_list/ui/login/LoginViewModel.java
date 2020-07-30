@@ -63,14 +63,22 @@ public class LoginViewModel extends ViewModel {
         if (username == null) {
             return false;
         }
-        if (username.contains("@")) {
-            return Patterns.EMAIL_ADDRESS.matcher(username).matches();
-        } else {
-            return !username.trim().isEmpty();
+        int length = username.trim().length();
+        if (length < 3 || length > 12) {
+            return false;
         }
+        // todo 判断username是不是只有数字和字母
+        return true;
     }
 
     private boolean isPasswordValid(String password) {
-        return password != null && password.trim().length() > 2;
+        if (password == null) {
+            return false;
+        }
+        int length = password.length();
+        if(length < 6 || length > 18) {
+            return false;
+        }
+        return true;
     }
 }

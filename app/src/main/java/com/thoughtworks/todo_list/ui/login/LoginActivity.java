@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
@@ -16,9 +17,18 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.thoughtworks.todo_list.MainApplication;
 import com.thoughtworks.todo_list.R;
+import com.thoughtworks.todo_list.repository.user.entity.User;
+import com.thoughtworks.todo_list.repository.utils.Encryptor;
+
+import io.reactivex.CompletableObserver;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 public class LoginActivity extends AppCompatActivity {
+    public final String TAG = this.getClass().getName();
     private LoginViewModel loginViewModel;
+    UserRepository userRepository;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -91,6 +101,33 @@ public class LoginActivity extends AppCompatActivity {
             loginViewModel.login(usernameEditText.getText().toString(),
                     passwordEditText.getText().toString());
         });
+        saveUser();
+    }
+
+    private void saveUser() {
+        User user = new User();
+        user.setName("xqxq");
+        user.setPassword(Encryptor.md5("xqxq"));
+        userRepository.save(user)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new CompletableObserver() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        Log.d(TAG, "save user successfully");
+                        Toast.makeText(getApplicationContext(),"New User successfully!", Toast.LENGTH_LONG).show();
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.d(TAG, "save user failure");
+                    }
+                });
     }
 
     private void updateUiWithUser(LoggedInUserView model) {
@@ -103,7 +140,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private LoginViewModel obtainViewModel() {
-        UserRepository userRepository = (((MainApplication) getApplicationContext())).userRepository();
+        userRepository = (((MainApplication) getApplicationContext())).userRepository();
         LoginViewModel loginViewModel = new ViewModelProvider(this).get(LoginViewModel.class);
         loginViewModel.setUserRepository(userRepository);
         return loginViewModel;
