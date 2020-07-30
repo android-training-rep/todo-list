@@ -21,6 +21,7 @@ import com.thoughtworks.todo_list.MainApplication;
 import com.thoughtworks.todo_list.R;
 import com.thoughtworks.todo_list.repository.user.entity.User;
 import com.thoughtworks.todo_list.repository.utils.Encryptor;
+import com.thoughtworks.todo_list.ui.task.HomeActivity;
 
 import java.io.IOException;
 
@@ -120,7 +121,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void initDefaultUser() {
         // todo 从远端拉取数据失败
-        getUserFromRemote();
+//        getUserFromRemote();
         User user = new User();
         user.setName("android");
         user.setPassword(Encryptor.md5("123456"));
