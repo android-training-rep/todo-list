@@ -11,6 +11,8 @@ import androidx.lifecycle.ViewModel;
 import com.thoughtworks.todo_list.R;
 import com.thoughtworks.todo_list.repository.utils.Encryptor;
 
+import java.util.regex.Pattern;
+
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
@@ -60,15 +62,8 @@ public class LoginViewModel extends ViewModel {
     }
 
     private boolean isUserNameValid(String username) {
-        if (username == null) {
-            return false;
-        }
-        int length = username.trim().length();
-        if (length < 3 || length > 12) {
-            return false;
-        }
-        // todo 判断username是不是只有数字和字母
-        return true;
+        String pattern = "^[A-Za-z0-9]{3,12}$";
+        return Pattern.matches(pattern, username.trim());
     }
 
     private boolean isPasswordValid(String password) {
