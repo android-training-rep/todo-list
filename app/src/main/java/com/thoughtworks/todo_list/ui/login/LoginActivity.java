@@ -15,20 +15,34 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.thoughtworks.todo_list.MainApplication;
 import com.thoughtworks.todo_list.R;
 import com.thoughtworks.todo_list.repository.user.entity.User;
 import com.thoughtworks.todo_list.repository.utils.Encryptor;
 
+import java.io.IOException;
+
 import io.reactivex.CompletableObserver;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class LoginActivity extends AppCompatActivity {
+
     public final String TAG = this.getClass().getName();
     private LoginViewModel loginViewModel;
-    UserRepository userRepository;
+    private UserRepository userRepository;
+    private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -101,20 +115,22 @@ public class LoginActivity extends AppCompatActivity {
             loginViewModel.login(usernameEditText.getText().toString(),
                     passwordEditText.getText().toString());
         });
-        saveUser();
+        initDefaultUser();
     }
 
-    private void saveUser() {
+    private void initDefaultUser() {
+        // todo 从远端拉取数据失败
+        getUserFromRemote();
         User user = new User();
-        user.setName("xqxq");
-        user.setPassword(Encryptor.md5("xqxq"));
+        user.setName("android");
+        user.setPassword(Encryptor.md5("123456"));
         userRepository.save(user)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new CompletableObserver() {
                     @Override
                     public void onSubscribe(Disposable d) {
-
+                        compositeDisposable.add(d);
                     }
 
                     @Override
@@ -126,6 +142,62 @@ public class LoginActivity extends AppCompatActivity {
                     @Override
                     public void onError(Throwable e) {
                         Log.d(TAG, "save user failure");
+                    }
+                });
+    }
+
+    private void getUserFromRemote() {
+        String myUrl = "https://twc-android-bootcamp.github.io/fake-data/data/user.json";
+        Observable observable = Observable.create(new ObservableOnSubscribe<User>(){
+            @Override
+            public void subscribe(ObservableEmitter<User> emitter) throws Exception {
+                OkHttpClient client = new OkHttpClient();
+                try {
+                    Request request = new Request.Builder()
+                            .url(myUrl)
+                            .build();
+                    Response response = client.newCall(request).execute();
+                    if (response.isSuccessful()) {
+                        String respStr = response.body().string();
+                        Gson gson = new Gson();
+                        java.lang.reflect.Type type = new TypeToken<User>() {}.getType();
+                        User user = gson.fromJson(respStr, type);
+                        emitter.onNext(user);
+                        emitter.onComplete();
+                    } else if (!response.isSuccessful()) {
+                        Log.d(TAG,"get response failure");
+                        emitter.onError(new Exception("error"));
+                    }
+                } catch (IOException e) {
+                    emitter.onError(e);
+                }
+            }
+        });
+        observable
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<User>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        compositeDisposable.add(d);
+                        Log.d(TAG, "---------------------onSubscriber");
+
+                    }
+
+                    @Override
+                    public void onNext(User user) {
+                        Log.d(TAG, "-------------------Get Default User successfully");
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.d(TAG, "--------------------Get Default User Error");
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        Log.d(TAG, "-------------------Get Default User onComplete");
                     }
                 });
     }
@@ -144,5 +216,11 @@ public class LoginActivity extends AppCompatActivity {
         LoginViewModel loginViewModel = new ViewModelProvider(this).get(LoginViewModel.class);
         loginViewModel.setUserRepository(userRepository);
         return loginViewModel;
+    }
+
+    @Override
+    protected void onDestroy() {
+        compositeDisposable.clear();
+        super.onDestroy();
     }
 }
