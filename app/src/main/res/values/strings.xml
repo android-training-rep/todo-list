@@ -12,4 +12,8 @@
     <string name="invalid_password">The password must be character with a length of 6 - 18</string>
     <string name="login_failed_username">"User does not exist"</string>
     <string name="login_failed_password">"Password is invalid"</string>
+    <string name="task_title">Task Title</string>
+    <string name="task_content">Task Content</string>
+    <string name="action_remind">Remind</string>
+    <string name="plus">+</string>
 </resources>

@@ -1,20 +1,46 @@
 package com.thoughtworks.todo_list.ui.task;
 
 import androidx.appcompat.app.AppCompatActivity;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
+import androidx.appcompat.widget.Toolbar;
 
+import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.CalendarView;
+import android.widget.EditText;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.thoughtworks.todo_list.MainApplication;
 import com.thoughtworks.todo_list.R;
+import com.thoughtworks.todo_list.repository.task.TaskRepository;
+import com.thoughtworks.todo_list.repository.task.entity.Task;
+
+import java.util.Calendar;
+
+import io.reactivex.CompletableObserver;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 public class TaskActivity extends AppCompatActivity {
+    public final String TAG = this.getClass().getName();
+    private TaskRepository taskRepository;
+    private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_task);
 
-        Button saveBtn = findViewById(R.id.save);
+        obtainViewModel();
+
+        Toolbar taskToolbar = (Toolbar) findViewById(R.id.task_toolbar);
+        setSupportActionBar(taskToolbar);
+
+        FloatingActionButton saveBtn = findViewById(R.id.save_task);
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -24,6 +50,70 @@ public class TaskActivity extends AppCompatActivity {
     }
 
     private void saveTask() {
+        final CalendarView calendarView = (CalendarView) findViewById(R.id.deadline);
+        final Calendar c = Calendar.getInstance();
+        String deadline = String.valueOf(c.get(Calendar.YEAR)) + " "
+                + String.valueOf(c.get(Calendar.MONTH)) + " "
+                + String.valueOf(c.get(Calendar.DATE));
 
+        EditText titleView = findViewById(R.id.title);
+        EditText contentView = findViewById(R.id.content);
+        Boolean isRemind = false;
+
+        Task task = new Task();
+        task.setTitle(titleView.getText().toString());
+        task.setContent(contentView.getText().toString());
+        task.setDeadline(deadline);
+        task.setRemind(isRemind);
+        task.setDeleted(false);
+
+        taskRepository.save(task).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new CompletableObserver() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        compositeDisposable.add(d);
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        Log.d(TAG, "save task successfully");
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.d(TAG, "save task failure");
+                    }
+                });
+
+
+    }
+
+    private void obtainViewModel() {
+        taskRepository = (((MainApplication) getApplicationContext())).taskRepository();
+//        LoginViewModel loginViewModel = new ViewModelProvider(this).get(LoginViewModel.class);
+//        loginViewModel.setUserRepository(userRepository);
+//        return loginViewModel;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_task, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_remind) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 }
