@@ -29,6 +29,7 @@ public class TaskActivity extends AppCompatActivity {
     public final String TAG = this.getClass().getName();
     private TaskRepository taskRepository;
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private boolean remind = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,13 +59,12 @@ public class TaskActivity extends AppCompatActivity {
 
         EditText titleView = findViewById(R.id.title);
         EditText contentView = findViewById(R.id.content);
-        Boolean isRemind = false;
 
         Task task = new Task();
         task.setTitle(titleView.getText().toString());
         task.setContent(contentView.getText().toString());
         task.setDeadline(deadline);
-        task.setRemind(isRemind);
+        task.setRemind(remind);
         task.setDeleted(false);
 
         taskRepository.save(task).subscribeOn(Schedulers.io())
@@ -104,13 +104,15 @@ public class TaskActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_remind) {
+            remind = !remind;
+            if (remind) {
+                item.setIcon(R.drawable.remind_selected);
+            } else {
+                item.setIcon(R.drawable.remind_unselected);
+            }
+            Log.d(TAG, ""+remind);
             return true;
         }
 

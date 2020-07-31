@@ -16,4 +16,5 @@
     <string name="task_content">Task Content</string>
     <string name="action_remind">Remind</string>
     <string name="plus">+</string>
+    <string name="action_deadline">Deadline</string>
 </resources>

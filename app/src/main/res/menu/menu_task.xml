@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto" >
     <item
         android:id="@+id/action_remind"
-        android:orderInCategory="100"
+        android:icon="@drawable/remind_unselected"
         android:title="@string/action_remind"
-        app:showAsAction="never" />
+        app:showAsAction="ifRoom" />
 </menu>
