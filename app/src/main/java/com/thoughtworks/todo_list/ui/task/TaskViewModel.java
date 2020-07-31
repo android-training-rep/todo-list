@@ -10,11 +10,12 @@ import androidx.lifecycle.ViewModel;
 import com.thoughtworks.todo_list.repository.task.TaskRepository;
 import com.thoughtworks.todo_list.repository.task.entity.Task;
 
+import org.reactivestreams.Subscription;
+
 import java.util.List;
 
-import io.reactivex.MaybeObserver;
+import io.reactivex.FlowableSubscriber;
 import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.disposables.Disposable;
 
 public class TaskViewModel extends ViewModel {
     public static final String TAG = "TaskViewModel";
@@ -32,32 +33,35 @@ public class TaskViewModel extends ViewModel {
     }
 
     public void loadTasks() {
-        taskRepository.findAllTasks()
-                .subscribe(new MaybeObserver<List<Task>>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-                        Log.d(TAG, "-------------------onSubscribe-------------------");
-                        compositeDisposable.add(d);
-                    }
+        try {
+            taskRepository.findAllTasks().subscribe(new FlowableSubscriber<List<Task>>() {
+                @Override
+                public void onSubscribe(Subscription s) {
+                    Log.d(TAG, "--------------------onSubscribe");
 
-                    @Override
-                    public void onSuccess(List<Task> tasks) {
-                        Log.d(TAG, "-------------------onSuccess-------------------");
-                        // todo 排序，vm变化
-                    }
+                }
 
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.d(TAG, "-------------------onError-------------------");
+                @Override
+                public void onNext(List<Task> tasks) {
+                    Log.d(TAG, "--------------------onNext");
+                }
 
-                    }
+                @Override
+                public void onError(Throwable t) {
+                    Log.d(TAG, "--------------------onError");
 
-                    @Override
-                    public void onComplete() {
-                        Log.d(TAG, "-------------------onComplete-------------------");
+                }
 
-                    }
-                });
+                @Override
+                public void onComplete() {
+                    Log.d(TAG, "--------------------onComplete");
+
+                }
+            });
+        } catch (Exception e) {
+            Log.d(TAG, "--------------------Exception"+ e);
+
+        }
     }
 
     @Override

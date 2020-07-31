@@ -1,5 +1,6 @@
 package com.thoughtworks.todo_list.ui.task;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.ViewModelProvider;
@@ -11,6 +12,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.CalendarView;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.thoughtworks.todo_list.MainApplication;
@@ -19,8 +21,11 @@ import com.thoughtworks.todo_list.repository.task.TaskRepository;
 import com.thoughtworks.todo_list.repository.task.entity.Task;
 
 import java.util.Calendar;
+import java.util.List;
 
 import io.reactivex.CompletableObserver;
+import io.reactivex.MaybeObserver;
+import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
@@ -37,11 +42,27 @@ public class TaskActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_task);
 
+        TaskViewModel taskViewModel = obtainViewModel();
 
-        Toolbar taskToolbar = findViewById(R.id.task_toolbar);
-        setSupportActionBar(taskToolbar);
+        TextView calendarText = findViewById(R.id.deadline);
+        final CalendarView calendarView = (CalendarView) findViewById(R.id.calendar);
 
+        calendarText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.d(TAG, "calendar click!");
+                calendarView.setVisibility(View.VISIBLE);
+            }
+        });
+        calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener(){
 
+             @Override
+             public void onSelectedDayChange(@NonNull CalendarView calendarView, int i, int i1, int i2) {
+                 String selectedDay = i + " " + (i1+1) + " " + i2;
+                 calendarText.setText(selectedDay);
+                 calendarView.setVisibility(View.GONE);
+             }
+        });
 
         FloatingActionButton saveBtn = findViewById(R.id.save_task);
         saveBtn.setOnClickListener(new View.OnClickListener() {
@@ -53,7 +74,7 @@ public class TaskActivity extends AppCompatActivity {
     }
 
     private void saveTask() {
-        final CalendarView calendarView = (CalendarView) findViewById(R.id.deadline);
+//        final CalendarView calendarView = (CalendarView) findViewById(R.id.deadline);
         final Calendar c = Calendar.getInstance();
         String deadline = String.valueOf(c.get(Calendar.YEAR)) + " "
                 + String.valueOf(c.get(Calendar.MONTH)) + " "
@@ -71,15 +92,41 @@ public class TaskActivity extends AppCompatActivity {
 
         taskRepository.save(task).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new CompletableObserver() {
+                .subscribe(new SingleObserver<Long>() {
                     @Override
                     public void onSubscribe(Disposable d) {
                         compositeDisposable.add(d);
                     }
 
                     @Override
-                    public void onComplete() {
-                        Log.d(TAG, "save task successfully");
+                    public void onSuccess(Long aLong) {
+
+                        Log.d(TAG, "save task successfully" + aLong);
+//                        taskRepository.findAllTasks().subscribe(new MaybeObserver<List<Task>>() {
+//                            @Override
+//                            public void onSubscribe(Disposable d) {
+//                                Log.d(TAG, "get task onSubscribe");
+//
+//                            }
+//
+//                            @Override
+//                            public void onSuccess(List<Task> tasks) {
+//                                Log.d(TAG, "get task onSuccess");
+//
+//                            }
+//
+//                            @Override
+//                            public void onError(Throwable e) {
+//                                Log.d(TAG, "get task onError");
+//
+//                            }
+//
+//                            @Override
+//                            public void onComplete() {
+//                                Log.d(TAG, "get task onComplete");
+//
+//                            }
+//                        });
                     }
 
                     @Override

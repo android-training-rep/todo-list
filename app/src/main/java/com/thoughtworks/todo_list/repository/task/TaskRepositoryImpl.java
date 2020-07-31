@@ -5,7 +5,9 @@ import com.thoughtworks.todo_list.repository.task.entity.Task;
 import java.util.List;
 
 import io.reactivex.Completable;
+import io.reactivex.Flowable;
 import io.reactivex.Maybe;
+import io.reactivex.Single;
 
 public class TaskRepositoryImpl implements TaskRepository {
     private TaskDataSource dataSource;
@@ -18,11 +20,11 @@ public class TaskRepositoryImpl implements TaskRepository {
         return dataSource.findById(id);
     }
 
-    public Maybe<List<Task>> findAllTasks() {
+    public Flowable<List<Task>> findAllTasks() {
         return dataSource.findAllTasks();
     }
 
-    public Completable save(Task task) {
+    public Single<Long> save(Task task) {
         return dataSource.save(task);
     }
 

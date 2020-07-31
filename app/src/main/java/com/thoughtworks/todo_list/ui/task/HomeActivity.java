@@ -34,15 +34,23 @@ public class HomeActivity extends AppCompatActivity {
 
 
         TaskViewModel taskViewModel = obtainViewModel();
+        List<Task> tasks = loadMockTasks();
+        recyclerView = findViewById(R.id.task_list);
+        recyclerView.setHasFixedSize(true);
+        layoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(layoutManager);
+        myAdapter = new TaskAdapter(tasks);
+        recyclerView.setAdapter(myAdapter);
+
         taskViewModel.loadTasks();
-        taskViewModel.observeTaskList(this, tasks -> {
-            recyclerView = findViewById(R.id.task_list);
-            recyclerView.setHasFixedSize(true);
-            layoutManager = new LinearLayoutManager(this);
-            recyclerView.setLayoutManager(layoutManager);
-            myAdapter = new TaskAdapter(tasks);
-            recyclerView.setAdapter(myAdapter);
-        });
+//        taskViewModel.observeTaskList(this, tasks -> {
+//            recyclerView = findViewById(R.id.task_list);
+//            recyclerView.setHasFixedSize(true);
+//            layoutManager = new LinearLayoutManager(this);
+//            recyclerView.setLayoutManager(layoutManager);
+//            myAdapter = new TaskAdapter(tasks);
+//            recyclerView.setAdapter(myAdapter);
+//        });
 
 
         FloatingActionButton fab = findViewById(R.id.add_task);
@@ -57,7 +65,7 @@ public class HomeActivity extends AppCompatActivity {
 
     private List<Task> loadMockTasks() {
         List<Task> tasks = new ArrayList<Task>();
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < 12; i++) {
             Task task = new Task();
             task.setTitle("todo title"+i);
             task.setContent("todo content"+i);
@@ -66,7 +74,6 @@ public class HomeActivity extends AppCompatActivity {
             task.setDeleted(i%2 == 0 ? false : true);
             tasks.add(task);
         }
-        Log.d(TAG, "-------------------Task size:-------------------" + tasks.size());
         return tasks;
     }
 

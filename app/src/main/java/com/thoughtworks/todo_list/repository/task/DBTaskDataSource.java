@@ -11,7 +11,9 @@ import com.thoughtworks.todo_list.repository.task.entity.Task;
 import java.util.List;
 
 import io.reactivex.Completable;
+import io.reactivex.Flowable;
 import io.reactivex.Maybe;
+import io.reactivex.Single;
 
 @Dao
 public interface DBTaskDataSource extends TaskDataSource {
@@ -19,10 +21,10 @@ public interface DBTaskDataSource extends TaskDataSource {
     Maybe<Task> findById(int id);
 
     @Query("SELECT * FROM task")
-    Maybe<List<Task>> findAllTasks();
+    Flowable<List<Task>> findAllTasks();
 
     @Insert
-    Completable save(Task task);
+    Single<Long> save(Task task);
 
     @Update
     Completable update(Task task);
