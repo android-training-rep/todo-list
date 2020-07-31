@@ -35,3 +35,8 @@ content=Column{name='content', type='text', affinity='2', notNull=false, primary
 }, foreignKeys=[], indices=[]}
         
 ```
+
+### 用lambda报错
+```
+The exception was not handled due to missing onError handler in the subscribe() method call.
+```

@@ -9,7 +9,7 @@ import io.reactivex.Maybe;
 
 public interface TaskDataSource {
     Maybe<Task> findById(int id);
-    Maybe<List<Task>> getTask();
+    Maybe<List<Task>> findAllTasks();
     Completable save(Task task);
     Completable update(Task task);
     Completable delete(Task task);

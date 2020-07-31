@@ -18,8 +18,8 @@ public class TaskRepositoryImpl implements TaskRepository {
         return dataSource.findById(id);
     }
 
-    public Maybe<List<Task>> getTask() {
-        return dataSource.getTask();
+    public Maybe<List<Task>> findAllTasks() {
+        return dataSource.findAllTasks();
     }
 
     public Completable save(Task task) {

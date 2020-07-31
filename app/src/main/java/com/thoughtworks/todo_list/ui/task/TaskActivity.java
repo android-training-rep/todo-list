@@ -2,6 +2,7 @@ package com.thoughtworks.todo_list.ui.task;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -40,7 +41,7 @@ public class TaskActivity extends AppCompatActivity {
         Toolbar taskToolbar = findViewById(R.id.task_toolbar);
         setSupportActionBar(taskToolbar);
 
-        obtainViewModel();
+
 
         FloatingActionButton saveBtn = findViewById(R.id.save_task);
         saveBtn.setOnClickListener(new View.OnClickListener() {
@@ -90,11 +91,11 @@ public class TaskActivity extends AppCompatActivity {
 
     }
 
-    private void obtainViewModel() {
+    private TaskViewModel obtainViewModel() {
         taskRepository = (((MainApplication) getApplicationContext())).taskRepository();
-//        LoginViewModel loginViewModel = new ViewModelProvider(this).get(LoginViewModel.class);
-//        loginViewModel.setUserRepository(userRepository);
-//        return loginViewModel;
+        TaskViewModel taskViewModel = new ViewModelProvider(this).get(TaskViewModel.class);
+        taskViewModel.setTaskRepository(taskRepository);
+        return taskViewModel;
     }
 
     @Override

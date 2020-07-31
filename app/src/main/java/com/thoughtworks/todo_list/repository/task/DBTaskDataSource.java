@@ -19,7 +19,7 @@ public interface DBTaskDataSource extends TaskDataSource {
     Maybe<Task> findById(int id);
 
     @Query("SELECT * FROM task")
-    Maybe<List<Task>> getTask();
+    Maybe<List<Task>> findAllTasks();
 
     @Insert
     Completable save(Task task);

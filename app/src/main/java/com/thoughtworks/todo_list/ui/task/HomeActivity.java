@@ -6,12 +6,14 @@ import android.util.Log;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
+import com.thoughtworks.todo_list.MainApplication;
 import com.thoughtworks.todo_list.R;
+import com.thoughtworks.todo_list.repository.task.TaskRepository;
 import com.thoughtworks.todo_list.repository.task.entity.Task;
 
 import java.util.ArrayList;
@@ -20,6 +22,7 @@ import java.util.List;
 public class HomeActivity extends AppCompatActivity {
 
     public final String TAG = this.getClass().getName();
+    private TaskRepository taskRepository;
     private RecyclerView recyclerView;
     private RecyclerView.Adapter myAdapter;
     private RecyclerView.LayoutManager layoutManager;
@@ -29,14 +32,17 @@ public class HomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activiey_home);
 
-        recyclerView = findViewById(R.id.task_list);
-        recyclerView.setHasFixedSize(true);
-        layoutManager = new LinearLayoutManager(this);
-        recyclerView.setLayoutManager(layoutManager);
-        // todo get task list
-        List<Task> tasks = loadTasks();
-        myAdapter = new TaskAdapter(tasks);
-        recyclerView.setAdapter(myAdapter);
+
+        TaskViewModel taskViewModel = obtainViewModel();
+        taskViewModel.loadTasks();
+        taskViewModel.observeTaskList(this, tasks -> {
+            recyclerView = findViewById(R.id.task_list);
+            recyclerView.setHasFixedSize(true);
+            layoutManager = new LinearLayoutManager(this);
+            recyclerView.setLayoutManager(layoutManager);
+            myAdapter = new TaskAdapter(tasks);
+            recyclerView.setAdapter(myAdapter);
+        });
 
 
         FloatingActionButton fab = findViewById(R.id.add_task);
@@ -49,9 +55,8 @@ public class HomeActivity extends AppCompatActivity {
         });
     }
 
-    private List<Task> loadTasks() {
+    private List<Task> loadMockTasks() {
         List<Task> tasks = new ArrayList<Task>();
-
         for (int i = 0; i < 6; i++) {
             Task task = new Task();
             task.setTitle("todo title"+i);
@@ -64,4 +69,12 @@ public class HomeActivity extends AppCompatActivity {
         Log.d(TAG, "-------------------Task size:-------------------" + tasks.size());
         return tasks;
     }
+
+    private TaskViewModel obtainViewModel() {
+        taskRepository = (((MainApplication) getApplicationContext())).taskRepository();
+        TaskViewModel taskViewModel = new ViewModelProvider(this).get(TaskViewModel.class);
+        taskViewModel.setTaskRepository(taskRepository);
+        return taskViewModel;
+    }
+
 }
