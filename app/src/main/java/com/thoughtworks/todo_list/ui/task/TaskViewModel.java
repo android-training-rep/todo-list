@@ -9,12 +9,8 @@ import androidx.lifecycle.ViewModel;
 
 import com.thoughtworks.todo_list.repository.task.TaskRepository;
 import com.thoughtworks.todo_list.repository.task.entity.Task;
-
-import org.reactivestreams.Subscription;
-
 import java.util.List;
 
-import io.reactivex.FlowableSubscriber;
 import io.reactivex.disposables.CompositeDisposable;
 
 public class TaskViewModel extends ViewModel {
@@ -37,6 +33,7 @@ public class TaskViewModel extends ViewModel {
             @Override
             public void run() {
                 final List<Task> tasks = taskRepository.findAllTasks();
+                // todo task排序
                 taskList.postValue(tasks);
             }
         }).start();

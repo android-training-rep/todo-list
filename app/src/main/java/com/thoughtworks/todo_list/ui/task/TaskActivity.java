@@ -51,6 +51,7 @@ public class TaskActivity extends AppCompatActivity {
         TaskViewModel taskViewModel = obtainViewModel();
 
 
+        // todo 使calendar逻辑生效
         calendarView = (CalendarView) findViewById(R.id.calendar);
         calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener(){
 
@@ -72,6 +73,7 @@ public class TaskActivity extends AppCompatActivity {
     }
 
     private void configCustomActionBar() {
+        // todo 修改actionbar样式
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM); //Enable自定义的View

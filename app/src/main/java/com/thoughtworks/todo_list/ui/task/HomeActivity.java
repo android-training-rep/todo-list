@@ -66,6 +66,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void configCustomActionBar() {
+        // todo 修改 actionbar 和 menu 样式
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
