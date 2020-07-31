@@ -11,7 +11,7 @@ import io.reactivex.Single;
 
 public interface TaskDataSource {
     Maybe<Task> findById(int id);
-    Flowable<List<Task>> findAllTasks();
+    List<Task> findAllTasks();
     Single<Long> save(Task task);
     Completable update(Task task);
     Completable delete(Task task);

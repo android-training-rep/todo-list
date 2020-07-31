@@ -21,7 +21,7 @@ public interface DBTaskDataSource extends TaskDataSource {
     Maybe<Task> findById(int id);
 
     @Query("SELECT * FROM task")
-    Flowable<List<Task>> findAllTasks();
+    List<Task> findAllTasks();
 
     @Insert
     Single<Long> save(Task task);

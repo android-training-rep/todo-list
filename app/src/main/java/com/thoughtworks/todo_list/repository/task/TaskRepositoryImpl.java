@@ -20,7 +20,7 @@ public class TaskRepositoryImpl implements TaskRepository {
         return dataSource.findById(id);
     }
 
-    public Flowable<List<Task>> findAllTasks() {
+    public List<Task> findAllTasks() {
         return dataSource.findAllTasks();
     }
 

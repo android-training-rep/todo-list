@@ -33,35 +33,13 @@ public class TaskViewModel extends ViewModel {
     }
 
     public void loadTasks() {
-        try {
-            taskRepository.findAllTasks().subscribe(new FlowableSubscriber<List<Task>>() {
-                @Override
-                public void onSubscribe(Subscription s) {
-                    Log.d(TAG, "--------------------onSubscribe");
-
-                }
-
-                @Override
-                public void onNext(List<Task> tasks) {
-                    Log.d(TAG, "--------------------onNext");
-                }
-
-                @Override
-                public void onError(Throwable t) {
-                    Log.d(TAG, "--------------------onError");
-
-                }
-
-                @Override
-                public void onComplete() {
-                    Log.d(TAG, "--------------------onComplete");
-
-                }
-            });
-        } catch (Exception e) {
-            Log.d(TAG, "--------------------Exception"+ e);
-
-        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final List<Task> tasks = taskRepository.findAllTasks();
+                taskList.postValue(tasks);
+            }
+        }).start();
     }
 
     @Override
