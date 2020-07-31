@@ -10,7 +10,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/NoActionBar">
-        <activity android:name=".ui.task.TaskActivity">
+        <activity android:name=".ui.task.TaskActivity"
+            android:parentActivityName=".ui.task.HomeActivity">
 
         </activity>
         <activity

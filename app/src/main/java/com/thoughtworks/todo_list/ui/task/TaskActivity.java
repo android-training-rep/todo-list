@@ -36,10 +36,11 @@ public class TaskActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_task);
 
-        obtainViewModel();
 
-        Toolbar taskToolbar = (Toolbar) findViewById(R.id.task_toolbar);
+        Toolbar taskToolbar = findViewById(R.id.task_toolbar);
         setSupportActionBar(taskToolbar);
+
+        obtainViewModel();
 
         FloatingActionButton saveBtn = findViewById(R.id.save_task);
         saveBtn.setOnClickListener(new View.OnClickListener() {
