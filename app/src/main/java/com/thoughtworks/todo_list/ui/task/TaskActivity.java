@@ -1,6 +1,7 @@
 package com.thoughtworks.todo_list.ui.task;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.ViewModelProvider;
@@ -12,6 +13,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.CalendarView;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -36,31 +38,27 @@ public class TaskActivity extends AppCompatActivity {
     private TaskRepository taskRepository;
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
     private boolean remind = false;
+    private TextView calendarText;
+    private CalendarView calendarView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_task);
 
+        configCustomActionBar();
+
         TaskViewModel taskViewModel = obtainViewModel();
 
-        TextView calendarText = findViewById(R.id.deadline);
-        final CalendarView calendarView = (CalendarView) findViewById(R.id.calendar);
 
-        calendarText.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.d(TAG, "calendar click!");
-                calendarView.setVisibility(View.VISIBLE);
-            }
-        });
+        calendarView = (CalendarView) findViewById(R.id.calendar);
         calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener(){
 
              @Override
              public void onSelectedDayChange(@NonNull CalendarView calendarView, int i, int i1, int i2) {
                  String selectedDay = i + " " + (i1+1) + " " + i2;
                  calendarText.setText(selectedDay);
-                 calendarView.setVisibility(View.GONE);
+//                 calendarView.setVisibility(View.GONE);
              }
         });
 
@@ -71,6 +69,39 @@ public class TaskActivity extends AppCompatActivity {
                 saveTask();
             }
         });
+    }
+
+    private void configCustomActionBar() {
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM); //Enable自定义的View
+            actionBar.setCustomView(R.layout.task_action_bar);  //绑定自定义的布局：actionbar_layout.xml
+
+            ImageView remindView = actionBar.getCustomView().findViewById(R.id.action_remind);
+            calendarText = findViewById(R.id.deadline);
+
+            remindView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    remind = !remind;
+                    if (remind) {
+                        remindView.setImageResource(R.drawable.remind_selected);
+                    } else {
+                        remindView.setImageResource(R.drawable.remind_unselected);
+                    }
+                }
+            });
+
+            calendarText.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Log.d(TAG, "calendar click!");
+                    calendarView.setVisibility(View.VISIBLE);
+                }
+            });
+        }else {
+            Log.e("actionbar","is null");
+        }
     }
 
     private void saveTask() {
@@ -100,33 +131,7 @@ public class TaskActivity extends AppCompatActivity {
 
                     @Override
                     public void onSuccess(Long aLong) {
-
                         Log.d(TAG, "save task successfully" + aLong);
-//                        taskRepository.findAllTasks().subscribe(new MaybeObserver<List<Task>>() {
-//                            @Override
-//                            public void onSubscribe(Disposable d) {
-//                                Log.d(TAG, "get task onSubscribe");
-//
-//                            }
-//
-//                            @Override
-//                            public void onSuccess(List<Task> tasks) {
-//                                Log.d(TAG, "get task onSuccess");
-//
-//                            }
-//
-//                            @Override
-//                            public void onError(Throwable e) {
-//                                Log.d(TAG, "get task onError");
-//
-//                            }
-//
-//                            @Override
-//                            public void onComplete() {
-//                                Log.d(TAG, "get task onComplete");
-//
-//                            }
-//                        });
                     }
 
                     @Override
@@ -143,28 +148,5 @@ public class TaskActivity extends AppCompatActivity {
         TaskViewModel taskViewModel = new ViewModelProvider(this).get(TaskViewModel.class);
         taskViewModel.setTaskRepository(taskRepository);
         return taskViewModel;
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_task, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.action_remind) {
-            remind = !remind;
-            if (remind) {
-                item.setIcon(R.drawable.remind_selected);
-            } else {
-                item.setIcon(R.drawable.remind_unselected);
-            }
-            Log.d(TAG, ""+remind);
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 }

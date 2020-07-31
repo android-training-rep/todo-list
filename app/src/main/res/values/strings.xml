@@ -18,4 +18,5 @@
     <string name="plus">+</string>
     <string name="action_deadline">Deadline</string>
     <string name="choose_deadline">Click to Choose Deadline</string>
+    <string name="action_Exit">Exit</string>
 </resources>

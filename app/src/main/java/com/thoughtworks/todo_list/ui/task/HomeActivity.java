@@ -3,8 +3,12 @@ package com.thoughtworks.todo_list.ui.task;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -16,7 +20,9 @@ import com.thoughtworks.todo_list.R;
 import com.thoughtworks.todo_list.repository.task.TaskRepository;
 import com.thoughtworks.todo_list.repository.task.entity.Task;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class HomeActivity extends AppCompatActivity {
@@ -26,17 +32,20 @@ public class HomeActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private RecyclerView.Adapter myAdapter;
     private RecyclerView.LayoutManager layoutManager;
+    private TextView todayView, countTaskView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activiey_home);
 
+        configCustomActionBar();
 
         TaskViewModel taskViewModel = obtainViewModel();
 
         taskViewModel.loadTasks();
         taskViewModel.observeTaskList(this, tasks -> {
+            countTaskView.setText("Total: " + tasks.size());
             recyclerView = findViewById(R.id.task_list);
             recyclerView.setHasFixedSize(true);
             layoutManager = new LinearLayoutManager(this);
@@ -54,6 +63,20 @@ public class HomeActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+    }
+
+    private void configCustomActionBar() {
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
+            actionBar.setCustomView(R.layout.home_action_bar);
+            todayView = actionBar.getCustomView().findViewById(R.id.today);
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            todayView.setText(simpleDateFormat.format(new Date()));
+            countTaskView = actionBar.getCustomView().findViewById(R.id.count_task);
+        }else {
+            Log.d(TAG,"action bar is null");
+        }
     }
 
     /* 数据库不可用时可先使用mock task */
@@ -76,6 +99,23 @@ public class HomeActivity extends AppCompatActivity {
         TaskViewModel taskViewModel = new ViewModelProvider(this).get(TaskViewModel.class);
         taskViewModel.setTaskRepository(taskRepository);
         return taskViewModel;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_home, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_exit) {
+            // todo 处理退出逻辑
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
 }
