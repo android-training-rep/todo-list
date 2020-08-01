@@ -11,7 +11,7 @@ import com.thoughtworks.todo_list.repository.task.entity.Task;
 import com.thoughtworks.todo_list.repository.user.entity.User;
 import com.thoughtworks.todo_list.repository.user.DBUserDataSource;
 
-@Database(entities = {User.class, Task.class}, version = 3, exportSchema = false)
+@Database(entities = {User.class, Task.class}, version = 4, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
     public abstract DBUserDataSource userDBDataSource();
     public abstract DBTaskDataSource taskDataSource();

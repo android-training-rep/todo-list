@@ -9,6 +9,9 @@ import androidx.lifecycle.ViewModel;
 
 import com.thoughtworks.todo_list.repository.task.TaskRepository;
 import com.thoughtworks.todo_list.repository.task.entity.Task;
+
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import io.reactivex.disposables.CompositeDisposable;
@@ -33,7 +36,18 @@ public class TaskViewModel extends ViewModel {
             @Override
             public void run() {
                 final List<Task> tasks = taskRepository.findAllTasks();
-                // todo task排序
+                // todo 自定义排序抽到工具类中
+                Collections.sort(tasks, new Comparator(){
+                    public int compare(Object obj1, Object obj2) {
+                        Task task1 = (Task) obj1;
+                        Task task2 = (Task) obj2;
+                        if(task1.isCompleted() != task2.isCompleted()) {
+                            return task1.isCompleted() ? 1 : -1;
+                        } else {
+                            return task1.getDeadline().compareTo(task2.getDeadline());
+                        }
+                    }
+                });
                 taskList.postValue(tasks);
             }
         }).start();

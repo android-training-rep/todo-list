@@ -6,7 +6,7 @@
     android:orientation="horizontal"
     >
     <CheckBox
-        android:id="@+id/delete"
+        android:id="@+id/complete"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         />

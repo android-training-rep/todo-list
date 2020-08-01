@@ -1,6 +1,7 @@
 package com.thoughtworks.todo_list.ui.task;
 
 import android.graphics.Paint;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,7 @@ import com.thoughtworks.todo_list.repository.task.entity.Task;
 import java.util.List;
 
 public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ItemViewHolder> {
+    private static final String TAG = "TaskAdapter";
     private List<Task> tasks;
     public TaskAdapter(List<Task> tasks) {
         this.tasks = tasks;
@@ -34,6 +36,8 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ItemViewHolder
         holder.title.setText(currentTask.getTitle());
         holder.deadline.setText(currentTask.getDeadline());
         holder.check.setChecked(currentTask.isCompleted());
+        Log.d(TAG, ":" + currentTask.getTitle() + currentTask.isCompleted());
+
         if (currentTask.isCompleted()) {
             holder.title.setPaintFlags(Paint.STRIKE_THRU_TEXT_FLAG);
             holder.deadline.setPaintFlags(Paint.STRIKE_THRU_TEXT_FLAG);
