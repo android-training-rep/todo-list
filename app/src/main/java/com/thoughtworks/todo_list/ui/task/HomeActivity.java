@@ -71,6 +71,8 @@ public class HomeActivity extends AppCompatActivity {
         if (actionBar != null) {
             actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
             actionBar.setCustomView(R.layout.home_action_bar);
+            actionBar.setDisplayHomeAsUpEnabled(true);
+
             todayView = actionBar.getCustomView().findViewById(R.id.today);
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
             todayView.setText(simpleDateFormat.format(new Date()));
@@ -89,7 +91,7 @@ public class HomeActivity extends AppCompatActivity {
             task.setContent("todo content"+i);
             task.setDeadline("2020-07-31");
             task.setRemind(true);
-            task.setDeleted(i%2 == 0 ? false : true);
+            task.setCompleted(i%2 == 0 ? false : true);
             tasks.add(task);
         }
         return tasks;

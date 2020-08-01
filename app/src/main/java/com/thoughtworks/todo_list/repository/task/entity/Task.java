@@ -13,7 +13,7 @@ public class Task {
     private String content;
     private String deadline;
     private boolean isRemind;
-    private boolean isDeleted;
+    private boolean isCompleted;
 
     public int getId() {
         return id;
@@ -55,12 +55,12 @@ public class Task {
         isRemind = remind;
     }
 
-    public boolean isDeleted() {
-        return isDeleted;
+    public boolean isCompleted() {
+        return isCompleted;
     }
 
-    public void setDeleted(boolean deleted) {
-        isDeleted = deleted;
+    public void setCompleted(boolean completed) {
+        isCompleted = completed;
     }
 }
 

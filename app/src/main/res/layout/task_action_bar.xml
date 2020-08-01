@@ -10,14 +10,21 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         />
-    <TextView
-        android:id="@+id/deadline"
-        android:layout_width="wrap_content"
+    <RelativeLayout
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:hint="@string/choose_deadline"
-        android:gravity="center"
         android:layout_weight="1"
-        />
+        >
+
+        <TextView
+            android:id="@+id/deadline"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:hint="@string/choose_deadline"
+            android:gravity="center"
+            />
+    </RelativeLayout>
+
     <ImageView
         android:id="@+id/action_remind"
         android:layout_width="30dp"

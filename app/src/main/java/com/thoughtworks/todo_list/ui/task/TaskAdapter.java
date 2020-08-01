@@ -33,8 +33,8 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ItemViewHolder
         Task currentTask = tasks.get(position);
         holder.title.setText(currentTask.getTitle());
         holder.deadline.setText(currentTask.getDeadline());
-        holder.check.setChecked(currentTask.isDeleted());
-        if (currentTask.isDeleted()) {
+        holder.check.setChecked(currentTask.isCompleted());
+        if (currentTask.isCompleted()) {
             holder.title.setPaintFlags(Paint.STRIKE_THRU_TEXT_FLAG);
             holder.deadline.setPaintFlags(Paint.STRIKE_THRU_TEXT_FLAG);
         }
