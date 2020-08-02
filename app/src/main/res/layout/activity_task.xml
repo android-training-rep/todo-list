@@ -48,6 +48,5 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="20dp"
         android:src="@drawable/ic_baseline_check_24"
-        android:backgroundTint="@color/colorBlue"
         tools:ignore="MissingConstraints" />
 </FrameLayout>

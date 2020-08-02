@@ -3,9 +3,15 @@ package com.thoughtworks.todo_list.ui.task;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
+import android.annotation.SuppressLint;
+import android.content.res.ColorStateList;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.CalendarView;
@@ -31,8 +37,10 @@ public class TaskActivity extends AppCompatActivity {
     public final String TAG = this.getClass().getName();
     private TaskRepository taskRepository;
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private FloatingActionButton saveBtn;
     private TextView calendarSelected;
     private CalendarView calendarView;
+    private EditText titleEditText;
     private boolean isRemind = false;
     private boolean isCompleted = false;
     private String deadline = "";
@@ -57,10 +65,32 @@ public class TaskActivity extends AppCompatActivity {
                  deadline = i + "-" + (i1+1) + "-" + i2;
                  calendarSelected.setText(deadline);
                  calendarView.setVisibility(View.GONE);
+                 updateSaveButtonState();
              }
         });
 
-        FloatingActionButton saveBtn = findViewById(R.id.save_task);
+        titleEditText = findViewById(R.id.title);
+        titleEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                updateSaveButtonState();
+            }
+        });
+
+
+        saveBtn = findViewById(R.id.save_task);
+        saveBtn.setEnabled(false);
+        updateSaveButtonState();
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -114,12 +144,37 @@ public class TaskActivity extends AppCompatActivity {
         }
     }
 
+    private ColorStateList getColorStateListTest(int colorRes) {
+        int[][] states = new int[][]{
+                new int[]{android.R.attr.state_enabled}, // enabled
+                new int[]{-android.R.attr.state_enabled}, // disabled
+                new int[]{-android.R.attr.state_checked}, // unchecked
+                new int[]{android.R.attr.state_pressed}  // pressed
+        };
+        int color = ContextCompat.getColor(getApplicationContext(), colorRes);
+        int[] colors = new int[]{color, color, color, color};
+        return new ColorStateList(states, colors);
+    }
+
+    private void updateSaveButtonState(){
+        if(titleEditText.getText().toString() != "" && deadline != "") {
+            saveBtn.setEnabled(true);
+            ColorStateList colorStateList = ContextCompat.getColorStateList(getApplicationContext(), R.color.colorBlue);
+            saveBtn.setBackgroundTintMode(PorterDuff.Mode.SRC_ATOP);
+            saveBtn.setBackgroundTintList(colorStateList);
+        } else {
+            saveBtn.setEnabled(false);
+            ColorStateList colorStateList = ContextCompat.getColorStateList(getApplicationContext(), R.color.colorPrimary);
+            saveBtn.setBackgroundTintMode(PorterDuff.Mode.SRC_ATOP);
+            saveBtn.setBackgroundTintList(colorStateList);
+        }
+    }
+
     private void saveTask() {
-        EditText titleView = findViewById(R.id.title);
         EditText contentView = findViewById(R.id.content);
 
         Task task = new Task();
-        task.setTitle(titleView.getText().toString());
+        task.setTitle(titleEditText.getText().toString());
         task.setContent(contentView.getText().toString());
         task.setDeadline(deadline);
         task.setRemind(isRemind);
