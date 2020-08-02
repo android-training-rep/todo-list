@@ -143,6 +143,20 @@ public class TaskActivity extends AppCompatActivity {
             Log.e("actionbar","is null");
         }
     }
+    
+    private void updateSaveButtonState(){
+        if(titleEditText.getText().toString() != "" && deadline != "") {
+            saveBtn.setEnabled(true);
+            ColorStateList colorStateList = ContextCompat.getColorStateList(getApplicationContext(), R.color.colorBlue);
+            saveBtn.setBackgroundTintMode(PorterDuff.Mode.SRC_ATOP);
+            saveBtn.setBackgroundTintList(colorStateList);
+        } else {
+            saveBtn.setEnabled(false);
+            ColorStateList colorStateList = ContextCompat.getColorStateList(getApplicationContext(), R.color.colorPrimary);
+            saveBtn.setBackgroundTintMode(PorterDuff.Mode.SRC_ATOP);
+            saveBtn.setBackgroundTintList(colorStateList);
+        }
+    }
 
     private ColorStateList getColorStateListTest(int colorRes) {
         int[][] states = new int[][]{
