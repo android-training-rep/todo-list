@@ -19,6 +19,7 @@ import com.thoughtworks.todo_list.MainApplication;
 import com.thoughtworks.todo_list.R;
 import com.thoughtworks.todo_list.repository.task.TaskRepository;
 import com.thoughtworks.todo_list.repository.task.entity.Task;
+import com.thoughtworks.todo_list.repository.utils.RecyclerViewDivider;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -52,6 +53,7 @@ public class HomeActivity extends AppCompatActivity {
             recyclerView.setLayoutManager(layoutManager);
             myAdapter = new TaskAdapter(tasks);
             recyclerView.setAdapter(myAdapter);
+            recyclerView.addItemDecoration(new RecyclerViewDivider(HomeActivity.this, LinearLayoutManager.HORIZONTAL));
         });
 
 
