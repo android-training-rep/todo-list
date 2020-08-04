@@ -1,8 +1,9 @@
-package com.thoughtworks.todo_list.ui.task;
+package com.thoughtworks.todo_list.ui.home;
 
 import android.util.Log;
 
 import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModel;
@@ -13,27 +14,30 @@ import com.thoughtworks.todo_list.repository.task.entity.Task;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
+import io.reactivex.CompletableObserver;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 
-public class TaskViewModel extends ViewModel {
+public class HomeViewModel extends ViewModel {
     public static final String TAG = "TaskViewModel";
-    private MutableLiveData<List<Task>> taskList = new MutableLiveData<List<Task>>();
+    private MutableLiveData<List<Task>> tasks = new MutableLiveData<List<Task>>();
     private MutableLiveData<Task> toDetail = new MutableLiveData<Task>();
     private MutableLiveData<Task> updateTask = new MutableLiveData<Task>();
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     private TaskRepository taskRepository;
 
-    void setTaskRepository(TaskRepository taskRepository) {
+    public void setTaskRepository(TaskRepository taskRepository) {
         this.taskRepository = taskRepository;
     }
 
-    public LiveData<List<Task>> getTaskList() {
-        if (Objects.isNull(taskList)) {
-            taskList = new MutableLiveData<>();
+    public LiveData<List<Task>> getTasks() {
+        if (Objects.isNull(tasks)) {
+            tasks = new MutableLiveData<>();
         }
-        return taskList;
+        return tasks;
     }
 
     public LiveData<Task> getToDetail() {
@@ -75,20 +79,37 @@ public class TaskViewModel extends ViewModel {
                         }
                     }
                 });
-                taskList.postValue(tasks);
+                HomeViewModel.this.tasks.postValue(tasks);
             }
         }).start();
     }
 
-    // TODO ADD UPDATE FUNCTION
-
-    void observeTaskList(LifecycleOwner lifecycleOwner, Observer<List<Task>> observer) {
-        taskList.observe(lifecycleOwner, observer);
+    public void observeTasks(LifecycleOwner lifecycleOwner, Observer<List<Task>> observer) {
+        tasks.observe(lifecycleOwner, observer);
     }
 
     @Override
     protected void onCleared() {
         compositeDisposable.clear();
         super.onCleared();
+    }
+
+    public void updateTask(Task task) {
+        this.taskRepository.update(task).subscribe(new CompletableObserver() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                compositeDisposable.add(d);
+            }
+
+            @Override
+            public void onComplete() {
+                Log.d(TAG, "update successfully");
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Log.d(TAG, "update failure");
+            }
+        });
     }
 }

@@ -21,7 +21,7 @@ import com.thoughtworks.todo_list.MainApplication;
 import com.thoughtworks.todo_list.R;
 import com.thoughtworks.todo_list.repository.user.entity.User;
 import com.thoughtworks.todo_list.repository.utils.Encryptor;
-import com.thoughtworks.todo_list.ui.task.HomeActivity;
+import com.thoughtworks.todo_list.ui.home.HomeActivity;
 
 import java.io.IOException;
 
