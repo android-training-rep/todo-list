@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.content.Intent;
@@ -20,6 +21,7 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
@@ -27,6 +29,7 @@ import com.thoughtworks.todo_list.MainApplication;
 import com.thoughtworks.todo_list.R;
 import com.thoughtworks.todo_list.repository.task.TaskRepository;
 import com.thoughtworks.todo_list.repository.task.entity.Task;
+import com.thoughtworks.todo_list.ui.home.HomeActivity;
 
 import java.util.Objects;
 
@@ -38,7 +41,7 @@ import io.reactivex.schedulers.Schedulers;
 
 public class TaskActivity extends AppCompatActivity {
     public final String TAG = this.getClass().getName();
-    private TaskRepository taskRepository;
+    private TaskViewModel taskViewModel;
     private Task existTask = null;
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
     private FloatingActionButton saveBtn;
@@ -58,7 +61,32 @@ public class TaskActivity extends AppCompatActivity {
 
         configCustomActionBar();
 
-        TaskViewModel taskViewModel = obtainViewModel();
+        taskViewModel = obtainViewModel();
+
+        Observer<Boolean> saveObserver = aBoolean -> {
+            Toast.makeText(getApplicationContext(), aBoolean ? "新增成功" : "新增失败", Toast.LENGTH_SHORT)
+                    .show();
+            openHomeActivity();
+        };
+        taskViewModel.getSaveResult().observe(this, saveObserver);
+
+        Observer<Boolean> deleteObserver = aBoolean -> {
+            Toast.makeText(getApplicationContext(), aBoolean ? "删除成功" : "删除失败", Toast.LENGTH_SHORT)
+                    .show();
+            openHomeActivity();
+        };
+        taskViewModel.getDeleteResult().observe(this, deleteObserver);
+
+        Observer<Boolean> updateObserver = aBoolean -> {
+            Toast.makeText(getApplicationContext(), aBoolean ? "修改成功" : "修改失败", Toast.LENGTH_SHORT)
+                    .show();
+            openHomeActivity();
+        };
+        taskViewModel.getUpdateResult().observe(this, updateObserver);
+
+
+
+
 
         // todo 使calendar逻辑生效
         calendarView = (CalendarView) findViewById(R.id.calendar);
@@ -104,6 +132,11 @@ public class TaskActivity extends AppCompatActivity {
         });
     }
 
+    private void openHomeActivity() {
+        Intent intent = new Intent(this, HomeActivity.class);
+        startActivity(intent);
+    }
+
     private void initTask() {
         Intent intent = getIntent();
         String existTaskJson = intent.getStringExtra("exist");
@@ -113,6 +146,19 @@ public class TaskActivity extends AppCompatActivity {
             Log.d(TAG, "EXIST HAVE TASK");
             // todo 视图初始化
         }
+    }
+
+    private void saveTask() {
+        EditText contentView = findViewById(R.id.content);
+
+        Task task = new Task();
+        task.setTitle(titleEditText.getText().toString());
+        task.setContent(contentView.getText().toString());
+        task.setDeadline(deadline);
+        task.setRemind(isRemind);
+        task.setCompleted(isCompleted);
+
+        taskViewModel.save(task);
     }
 
     private void configCustomActionBar() {
@@ -186,38 +232,8 @@ public class TaskActivity extends AppCompatActivity {
         }
     }
 
-    private void saveTask() {
-        EditText contentView = findViewById(R.id.content);
-
-        Task task = new Task();
-        task.setTitle(titleEditText.getText().toString());
-        task.setContent(contentView.getText().toString());
-        task.setDeadline(deadline);
-        task.setRemind(isRemind);
-        task.setCompleted(isCompleted);
-
-        taskRepository.save(task).subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new SingleObserver<Long>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-                        compositeDisposable.add(d);
-                    }
-
-                    @Override
-                    public void onSuccess(Long aLong) {
-                        Log.d(TAG, "save task successfully" + aLong);
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.d(TAG, "save task failure");
-                    }
-                });
-    }
-
     private TaskViewModel obtainViewModel() {
-        taskRepository = (((MainApplication) getApplicationContext())).taskRepository();
+        TaskRepository taskRepository = (((MainApplication) getApplicationContext())).taskRepository();
         TaskViewModel taskViewModel = new ViewModelProvider(this).get(TaskViewModel.class);
         taskViewModel.setTaskRepository(taskRepository);
         return taskViewModel;

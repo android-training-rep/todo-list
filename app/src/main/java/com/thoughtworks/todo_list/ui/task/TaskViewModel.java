@@ -16,7 +16,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
+import io.reactivex.SingleObserver;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 public class TaskViewModel extends ViewModel {
     public static final String TAG = "TaskViewModel";
@@ -54,7 +58,26 @@ public class TaskViewModel extends ViewModel {
 
 
     public void save(Task task) {
+        taskRepository.save(task).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<Long>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        compositeDisposable.add(d);
+                    }
 
+                    @Override
+                    public void onSuccess(Long aLong) {
+                        Log.d(TAG, "save task successfully" + aLong);
+                        saveResult.postValue(true);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.d(TAG, "save task failure");
+                        saveResult.postValue(false);
+                    }
+                });
     }
 
     public void update(Task task) {

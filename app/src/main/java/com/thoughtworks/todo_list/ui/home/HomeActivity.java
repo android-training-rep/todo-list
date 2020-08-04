@@ -53,7 +53,7 @@ public class HomeActivity extends AppCompatActivity {
 
         Observer<List<Task>> observer = tasks -> {
             myAdapter.setTasks(tasks);
-            countTaskView.setText("Total: " + tasks.size());
+            countTaskView.setText("Total:" + tasks.size());
         };
         homeViewModel.getTasks().observe(this, observer);
 

@@ -16,6 +16,7 @@ import com.thoughtworks.todo_list.R;
 import com.thoughtworks.todo_list.repository.task.entity.Task;
 
 import java.util.List;
+import java.util.Objects;
 
 public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ItemViewHolder> {
     private static final String TAG = "TaskAdapter";
@@ -67,7 +68,8 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ItemViewHolder
 
     @Override
     public int getItemCount() {
-        return tasks.size();
+        if (Objects.nonNull(tasks)) return tasks.size();
+        return 0;
     }
 
     class ItemViewHolder extends RecyclerView.ViewHolder {
