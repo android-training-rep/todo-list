@@ -16,6 +16,7 @@ import java.util.Objects;
 
 import io.reactivex.CompletableObserver;
 import io.reactivex.MaybeObserver;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
@@ -102,30 +103,30 @@ public class HomeViewModel extends ViewModel {
 //                });
 
     }
-//Log.d(TAG, "update successfully");
-    //Log.d(TAG, "update failure");
     public void updateTask(Task task) {
-        this.taskRepository.update(task).subscribe(new MaybeObserver<Integer>() {
-            @Override
-            public void onSubscribe(Disposable d) {
-                compositeDisposable.add(d);
-            }
+        taskRepository.update(task).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new MaybeObserver<Integer>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        compositeDisposable.add(d);
+                    }
 
-            @Override
-            public void onSuccess(Integer result) {
-                Log.d(TAG, "update successfully");
-            }
+                    @Override
+                    public void onSuccess(Integer integer) {
+                        Log.d(TAG, "update task successfully" + integer);
+                    }
 
-            @Override
-            public void onError(Throwable e) {
-                Log.d(TAG, "update failure");
-            }
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.d(TAG, "update task failure");
+                    }
 
-            @Override
-            public void onComplete() {
-                Log.d(TAG, "complete");
-            }
-        });
+                    @Override
+                    public void onComplete() {
+                        Log.d(TAG, "update task complete");
+                    }
+                });
     }
 
     @Override

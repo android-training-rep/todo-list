@@ -16,6 +16,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
+import io.reactivex.MaybeObserver;
 import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
@@ -81,7 +82,31 @@ public class TaskViewModel extends ViewModel {
     }
 
     public void update(Task task) {
+        taskRepository.update(task).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new MaybeObserver<Integer>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        compositeDisposable.add(d);
+                    }
 
+                    @Override
+                    public void onSuccess(Integer integer) {
+                        Log.d(TAG, "update task successfully" + integer);
+                        updateResult.postValue(true);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.d(TAG, "update task failure");
+                        updateResult.postValue(false);
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        Log.d(TAG, "update task complete");
+                    }
+                });
     }
 
     public void delete(Task task) {

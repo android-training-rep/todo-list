@@ -56,9 +56,6 @@ public class TaskActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_task);
 
-
-//        configCustomActionBar();
-
         taskViewModel = obtainViewModel();
 
         Observer<Boolean> saveObserver = aBoolean -> {
@@ -91,10 +88,9 @@ public class TaskActivity extends AppCompatActivity {
         calendarSelected = findViewById(R.id.deadline);
         titleEditText = findViewById(R.id.title);
         contentView = findViewById(R.id.content);
-
+        initTask();
 
         saveBtn = findViewById(R.id.save_task);
-        saveBtn.setEnabled(false);
         updateSaveButtonState();
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -104,7 +100,6 @@ public class TaskActivity extends AppCompatActivity {
         });
 
         addListener();
-        initTask();
     }
 
     private void addListener() {
@@ -140,11 +135,7 @@ public class TaskActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 isRemind = !isRemind;
-                if (isRemind) {
-                    remindView.setImageResource(R.drawable.remind_selected);
-                } else {
-                    remindView.setImageResource(R.drawable.remind_unselected);
-                }
+                setIsRemindBackground(isRemind);
             }
         });
 
@@ -165,6 +156,14 @@ public class TaskActivity extends AppCompatActivity {
         });
     }
 
+    private void setIsRemindBackground(boolean isRemind) {
+        if (isRemind) {
+            remindView.setImageResource(R.drawable.remind_selected);
+        } else {
+            remindView.setImageResource(R.drawable.remind_unselected);
+        }
+    }
+
     private void openHomeActivity() {
         Intent intent = new Intent(this, HomeActivity.class);
         startActivity(intent);
@@ -179,25 +178,36 @@ public class TaskActivity extends AppCompatActivity {
             Log.d(TAG, "EXIST HAVE TASK");
             // todo 视图初始化
             titleEditText.setText(existTask.getTitle());
-
+            contentView.setText(existTask.getContent());
+            calendarSelected.setText(existTask.getDeadline());
+            isCompletedView.setChecked(existTask.isCompleted());
+            setIsRemindBackground(isRemind);
         }
     }
 
     private void saveTask() {
-
-
-        Task task = new Task();
-        task.setTitle(titleEditText.getText().toString());
-        task.setContent(contentView.getText().toString());
-        task.setDeadline(deadline);
-        task.setRemind(isRemind);
-        task.setCompleted(isCompleted);
-
-        taskViewModel.save(task);
+        if (Objects.nonNull(existTask)) {
+            existTask.setTitle(titleEditText.getText().toString());
+            existTask.setContent(contentView.getText().toString());
+            existTask.setDeadline(calendarSelected.getText().toString());
+            existTask.setRemind(isRemind);
+            existTask.setCompleted(isCompleted);
+            taskViewModel.update(existTask);
+        } else {
+            Task task = new Task();
+            task.setTitle(titleEditText.getText().toString());
+            task.setContent(contentView.getText().toString());
+            task.setDeadline(deadline);
+            task.setRemind(isRemind);
+            task.setCompleted(isCompleted);
+            taskViewModel.save(task);
+        }
     }
 
     private void updateSaveButtonState(){
-        if(titleEditText.getText().toString() != "" && deadline != "") {
+        String title = titleEditText.getText().toString();
+        String deadline = calendarSelected.getText().toString();
+        if( title != "" && deadline != "") {
             saveBtn.setEnabled(true);
             ColorStateList colorStateList = ContextCompat.getColorStateList(getApplicationContext(), R.color.colorBlue);
             saveBtn.setBackgroundTintMode(PorterDuff.Mode.SRC_ATOP);
