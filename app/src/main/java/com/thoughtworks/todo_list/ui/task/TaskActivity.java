@@ -4,9 +4,11 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
@@ -20,27 +22,32 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.gson.Gson;
 import com.thoughtworks.todo_list.MainApplication;
 import com.thoughtworks.todo_list.R;
 import com.thoughtworks.todo_list.repository.task.TaskRepository;
 import com.thoughtworks.todo_list.repository.task.entity.Task;
-
-import io.reactivex.SingleObserver;
-import io.reactivex.android.schedulers.AndroidSchedulers;
+import com.thoughtworks.todo_list.ui.home.HomeActivity;
+import java.util.Objects;
 import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
 
 public class TaskActivity extends AppCompatActivity {
     public final String TAG = this.getClass().getName();
-    private TaskRepository taskRepository;
+    private TaskViewModel taskViewModel;
+    private Task existTask = null;
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
-    private FloatingActionButton saveBtn;
-    private TextView calendarSelected;
+    private FloatingActionButton saveBtn, deleteBtn;
     private CalendarView calendarView;
+
+    private TextView calendarSelected;
+    private EditText contentView;
     private EditText titleEditText;
+    private CheckBox isCompletedView;
+    private ImageView remindView;
+
     private boolean isRemind = false;
     private boolean isCompleted = false;
     private String deadline = "";
@@ -50,26 +57,66 @@ public class TaskActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_task);
 
-        configCustomActionBar();
+        taskViewModel = obtainViewModel();
 
-        TaskViewModel taskViewModel = obtainViewModel();
+        Observer<Boolean> saveObserver = aBoolean -> {
+            Toast.makeText(getApplicationContext(), aBoolean ? "新增成功" : "新增失败", Toast.LENGTH_SHORT)
+                    .show();
+            openHomeActivity();
+        };
+        taskViewModel.getSaveResult().observe(this, saveObserver);
+
+        Observer<Boolean> deleteObserver = aBoolean -> {
+            Toast.makeText(getApplicationContext(), aBoolean ? "删除成功" : "删除失败", Toast.LENGTH_SHORT)
+                    .show();
+            openHomeActivity();
+        };
+        taskViewModel.getDeleteResult().observe(this, deleteObserver);
+
+        Observer<Boolean> updateObserver = aBoolean -> {
+            Toast.makeText(getApplicationContext(), aBoolean ? "修改成功" : "修改失败", Toast.LENGTH_SHORT)
+                    .show();
+            openHomeActivity();
+        };
+        taskViewModel.getUpdateResult().observe(this, updateObserver);
 
 
-        // todo 使calendar逻辑生效
         calendarView = (CalendarView) findViewById(R.id.calendar);
         calendarView.setVisibility(View.GONE);
-        calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener(){
 
-             @Override
-             public void onSelectedDayChange(@NonNull CalendarView calendarView, int i, int i1, int i2) {
-                 deadline = i + "-" + (i1+1) + "-" + i2;
-                 calendarSelected.setText(deadline);
-                 calendarView.setVisibility(View.GONE);
-                 updateSaveButtonState();
-             }
+        isCompletedView = findViewById(R.id.complete);
+        remindView = findViewById(R.id.action_remind);
+        calendarSelected = findViewById(R.id.deadline);
+        titleEditText = findViewById(R.id.title);
+        contentView = findViewById(R.id.content);
+        deleteBtn = findViewById(R.id.delete_task);
+        saveBtn = findViewById(R.id.save_task);
+
+        initTask();
+
+        updateSaveButtonState();
+        saveBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                saveTask();
+            }
         });
 
-        titleEditText = findViewById(R.id.title);
+        deleteBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                deleteTask();
+            }
+        });
+
+        addListener();
+    }
+
+    private void deleteTask() {
+        taskViewModel.delete(existTask);
+    }
+
+    private void addListener() {
         titleEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -87,60 +134,47 @@ public class TaskActivity extends AppCompatActivity {
             }
         });
 
+        calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener(){
 
-        saveBtn = findViewById(R.id.save_task);
-        saveBtn.setEnabled(false);
-        updateSaveButtonState();
-        saveBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onSelectedDayChange(@NonNull CalendarView calendarView, int i, int i1, int i2) {
+                deadline = i + "-" + (i1+1) + "-" + i2;
+                calendarSelected.setText(deadline);
+                calendarView.setVisibility(View.GONE);
+                updateSaveButtonState();
+            }
+        });
+
+        remindView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                isRemind = !isRemind;
+                setIsRemindBackground(isRemind);
+            }
+        });
+
+        calendarSelected.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                saveTask();
+                Log.d(TAG, "calendar click!");
+                calendarView.setVisibility(View.VISIBLE);
+            }
+        });
+
+        isCompletedView.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                isCompleted = b;
             }
         });
     }
 
-    private void configCustomActionBar() {
-        // todo 修改actionbar样式
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM); //Enable自定义的View
-            actionBar.setCustomView(R.layout.task_action_bar);  //绑定自定义的布局：actionbar_layout.xml
-            actionBar.setDisplayHomeAsUpEnabled(true);
-
-            CheckBox isCompletedView = actionBar.getCustomView().findViewById(R.id.complete);
-
-            ImageView remindView = actionBar.getCustomView().findViewById(R.id.action_remind);
-            calendarSelected = findViewById(R.id.deadline);
-
-            remindView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    isRemind = !isRemind;
-                    if (isRemind) {
-                        remindView.setImageResource(R.drawable.remind_selected);
-                    } else {
-                        remindView.setImageResource(R.drawable.remind_unselected);
-                    }
-                }
-            });
-
-            calendarSelected.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Log.d(TAG, "calendar click!");
-                    calendarView.setVisibility(View.VISIBLE);
-                }
-            });
-
-            isCompletedView.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
-
-                @Override
-                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                    isCompleted = b;
-                }
-            });
-        }else {
-            Log.e("actionbar","is null");
+    private void setIsRemindBackground(boolean isRemind) {
+        if (isRemind) {
+            remindView.setImageResource(R.drawable.remind_selected);
+        } else {
+            remindView.setImageResource(R.drawable.remind_unselected);
         }
     }
     
@@ -158,20 +192,54 @@ public class TaskActivity extends AppCompatActivity {
         }
     }
 
-    private ColorStateList getColorStateListTest(int colorRes) {
-        int[][] states = new int[][]{
-                new int[]{android.R.attr.state_enabled}, // enabled
-                new int[]{-android.R.attr.state_enabled}, // disabled
-                new int[]{-android.R.attr.state_checked}, // unchecked
-                new int[]{android.R.attr.state_pressed}  // pressed
-        };
-        int color = ContextCompat.getColor(getApplicationContext(), colorRes);
-        int[] colors = new int[]{color, color, color, color};
-        return new ColorStateList(states, colors);
+    private void openHomeActivity() {
+        Intent intent = new Intent(this, HomeActivity.class);
+        startActivity(intent);
+    }
+
+    @SuppressLint("RestrictedApi")
+    private void initTask() {
+        Intent intent = getIntent();
+        String existTaskJson = intent.getStringExtra("exist");
+        existTask = new Gson().fromJson(existTaskJson, Task.class);
+
+        if (Objects.nonNull(existTask)) {
+            Log.d(TAG, "EXIST HAVE TASK");
+            // todo 视图初始化
+            titleEditText.setText(existTask.getTitle());
+            contentView.setText(existTask.getContent());
+            calendarSelected.setText(existTask.getDeadline());
+            isCompletedView.setChecked(existTask.isCompleted());
+            setIsRemindBackground(isRemind);
+            deleteBtn.setVisibility(View.VISIBLE);
+        } else {
+            deleteBtn.setVisibility(View.GONE);
+        }
+    }
+
+    private void saveTask() {
+        if (Objects.nonNull(existTask)) {
+            existTask.setTitle(titleEditText.getText().toString());
+            existTask.setContent(contentView.getText().toString());
+            existTask.setDeadline(calendarSelected.getText().toString());
+            existTask.setRemind(isRemind);
+            existTask.setCompleted(isCompleted);
+            taskViewModel.update(existTask);
+        } else {
+            Task task = new Task();
+            task.setTitle(titleEditText.getText().toString());
+            task.setContent(contentView.getText().toString());
+            task.setDeadline(deadline);
+            task.setRemind(isRemind);
+            task.setCompleted(isCompleted);
+            taskViewModel.save(task);
+        }
     }
 
     private void updateSaveButtonState(){
-        if(titleEditText.getText().toString() != "" && deadline != "") {
+        String title = titleEditText.getText().toString();
+        String deadline = calendarSelected.getText().toString();
+        if( title != "" && deadline != "") {
             saveBtn.setEnabled(true);
             ColorStateList colorStateList = ContextCompat.getColorStateList(getApplicationContext(), R.color.colorBlue);
             saveBtn.setBackgroundTintMode(PorterDuff.Mode.SRC_ATOP);
@@ -184,38 +252,8 @@ public class TaskActivity extends AppCompatActivity {
         }
     }
 
-    private void saveTask() {
-        EditText contentView = findViewById(R.id.content);
-
-        Task task = new Task();
-        task.setTitle(titleEditText.getText().toString());
-        task.setContent(contentView.getText().toString());
-        task.setDeadline(deadline);
-        task.setRemind(isRemind);
-        task.setCompleted(isCompleted);
-
-        taskRepository.save(task).subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new SingleObserver<Long>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-                        compositeDisposable.add(d);
-                    }
-
-                    @Override
-                    public void onSuccess(Long aLong) {
-                        Log.d(TAG, "save task successfully" + aLong);
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.d(TAG, "save task failure");
-                    }
-                });
-    }
-
     private TaskViewModel obtainViewModel() {
-        taskRepository = (((MainApplication) getApplicationContext())).taskRepository();
+        TaskRepository taskRepository = (((MainApplication) getApplicationContext())).taskRepository();
         TaskViewModel taskViewModel = new ViewModelProvider(this).get(TaskViewModel.class);
         taskViewModel.setTaskRepository(taskRepository);
         return taskViewModel;

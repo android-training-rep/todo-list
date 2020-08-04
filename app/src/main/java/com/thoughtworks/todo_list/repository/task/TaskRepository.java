@@ -11,8 +11,8 @@ import io.reactivex.Single;
 
 public interface TaskRepository {
     Maybe<Task> findById(int id);
-    List<Task> findAllTasks();
+    Maybe<List<Task>> findAllTasks();
     Single<Long> save(Task task);
-    Completable update(Task task);
-    Completable delete(Task task);
+    Maybe<Integer> update(Task task);
+    Maybe<Integer> delete(Task task);
 }

@@ -1,4 +1,4 @@
-package com.thoughtworks.todo_list.ui.task;
+package com.thoughtworks.todo_list.ui.home;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,30 +10,35 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.gson.Gson;
 import com.thoughtworks.todo_list.MainApplication;
 import com.thoughtworks.todo_list.R;
 import com.thoughtworks.todo_list.repository.task.TaskRepository;
 import com.thoughtworks.todo_list.repository.task.entity.Task;
 import com.thoughtworks.todo_list.repository.utils.RecyclerViewDivider;
+import com.thoughtworks.todo_list.ui.task.TaskActivity;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 public class HomeActivity extends AppCompatActivity {
 
     public final String TAG = this.getClass().getName();
     private TaskRepository taskRepository;
     private RecyclerView recyclerView;
-    private RecyclerView.Adapter myAdapter;
     private RecyclerView.LayoutManager layoutManager;
     private TextView todayView, countTaskView;
+    private HomeAdapter myAdapter;
+    private HomeViewModel homeViewModel;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -42,29 +47,64 @@ public class HomeActivity extends AppCompatActivity {
 
         configCustomActionBar();
 
-        TaskViewModel taskViewModel = obtainViewModel();
+        homeViewModel = obtainViewModel();
 
-        taskViewModel.loadTasks();
-        taskViewModel.observeTaskList(this, tasks -> {
-            countTaskView.setText("Total: " + tasks.size());
-            recyclerView = findViewById(R.id.task_list);
-            recyclerView.setHasFixedSize(true);
-            layoutManager = new LinearLayoutManager(this);
-            recyclerView.setLayoutManager(layoutManager);
-            myAdapter = new TaskAdapter(tasks);
-            recyclerView.setAdapter(myAdapter);
-            recyclerView.addItemDecoration(new RecyclerViewDivider(HomeActivity.this, LinearLayoutManager.HORIZONTAL));
+        initRecyclerView(homeViewModel);
+
+        Observer<List<Task>> observer = tasks -> {
+            myAdapter.setTasks(tasks);
+            countTaskView.setText("Total:" + tasks.size());
+        };
+        homeViewModel.getTasks().observe(this, observer);
+
+        homeViewModel.getToDetail().observe(this, task -> {
+            this.openTaskActivityWithExtra(task);
+        });
+        homeViewModel.getUpdateTask().observe(this, task -> {
+            Log.d(TAG, "after:"+task.isCompleted());
+
+            this.updateTask(task);
         });
 
+        homeViewModel.loadTasks();
 
-        FloatingActionButton fab = findViewById(R.id.add_task);
-        fab.setOnClickListener(new View.OnClickListener() {
+        FloatingActionButton addTaskBtn = findViewById(R.id.add_task);
+        addTaskBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(HomeActivity.this,TaskActivity.class);
-                startActivity(intent);
+                openTaskActivityWithExtra(null);
             }
         });
+    }
+
+    private void updateTask(Task task) {
+        homeViewModel.updateTask(task);
+    }
+
+    private void initRecyclerView(HomeViewModel homeViewModel) {
+        recyclerView = findViewById(R.id.task_list);
+        recyclerView.setHasFixedSize(true);
+        layoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(layoutManager);
+        myAdapter = new HomeAdapter(homeViewModel);
+        recyclerView.setAdapter(myAdapter);
+        recyclerView.addItemDecoration(new RecyclerViewDivider(HomeActivity.this, LinearLayoutManager.HORIZONTAL));
+    }
+
+    private void openTaskActivityWithExtra(Task task) {
+        Intent intent = new Intent(this, TaskActivity.class);
+        if (Objects.nonNull(task)) {
+            String taskJson = new Gson().toJson(task);
+            intent.putExtra("exist", taskJson);
+        }
+        startActivity(intent);
+    }
+
+    private HomeViewModel obtainViewModel() {
+        taskRepository = (((MainApplication) getApplicationContext())).taskRepository();
+        HomeViewModel homeViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
+        homeViewModel.setTaskRepository(taskRepository);
+        return homeViewModel;
     }
 
     private void configCustomActionBar() {
@@ -97,13 +137,6 @@ public class HomeActivity extends AppCompatActivity {
             tasks.add(task);
         }
         return tasks;
-    }
-
-    private TaskViewModel obtainViewModel() {
-        taskRepository = (((MainApplication) getApplicationContext())).taskRepository();
-        TaskViewModel taskViewModel = new ViewModelProvider(this).get(TaskViewModel.class);
-        taskViewModel.setTaskRepository(taskRepository);
-        return taskViewModel;
     }
 
     @Override

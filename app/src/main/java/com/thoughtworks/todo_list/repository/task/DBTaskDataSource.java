@@ -21,14 +21,14 @@ public interface DBTaskDataSource extends TaskDataSource {
     Maybe<Task> findById(int id);
 
     @Query("SELECT * FROM task")
-    List<Task> findAllTasks();
+    Maybe<List<Task>> findAllTasks();
 
     @Insert
     Single<Long> save(Task task);
 
     @Update
-    Completable update(Task task);
+    Maybe<Integer> update(Task task);
 
     @Delete
-    Completable delete(Task task);
+    Maybe<Integer> delete(Task task);
 }

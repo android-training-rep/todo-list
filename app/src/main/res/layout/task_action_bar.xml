@@ -5,28 +5,5 @@
     android:layout_height="match_parent"
     android:orientation="horizontal"
     >
-    <CheckBox
-        android:id="@+id/complete"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        />
 
-    <TextView
-        android:id="@+id/deadline"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:textColor="@color/colorDark"
-        android:textSize="20sp"
-        android:hint="@string/choose_deadline"
-        android:gravity="center"
-        />
-
-    <ImageView
-        android:id="@+id/action_remind"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_gravity="center_vertical"
-        android:src="@drawable/remind_unselected"
-        />
 </LinearLayout>

@@ -3,6 +3,7 @@ package com.thoughtworks.todo_list.ui.task;
 import android.util.Log;
 
 import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModel;
@@ -13,44 +14,127 @@ import com.thoughtworks.todo_list.repository.task.entity.Task;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
+import io.reactivex.MaybeObserver;
+import io.reactivex.SingleObserver;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 public class TaskViewModel extends ViewModel {
     public static final String TAG = "TaskViewModel";
-    private MutableLiveData<List<Task>> taskList = new MutableLiveData<List<Task>>();
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private MutableLiveData<Boolean> saveResult;
+    private MutableLiveData<Boolean> updateResult;
+    private MutableLiveData<Boolean> deleteResult;
 
     private TaskRepository taskRepository;
+
+    public LiveData<Boolean> getSaveResult() {
+        if (Objects.isNull(saveResult)) {
+            saveResult = new MutableLiveData<>();
+        }
+        return saveResult;
+    }
+
+    public LiveData<Boolean> getUpdateResult() {
+        if (Objects.isNull(updateResult)) {
+            updateResult = new MutableLiveData<>();
+        }
+        return updateResult;
+    }
+
+    public LiveData<Boolean> getDeleteResult() {
+        if (Objects.isNull(deleteResult)) {
+            deleteResult = new MutableLiveData<>();
+        }
+        return deleteResult;
+    }
 
     void setTaskRepository(TaskRepository taskRepository) {
         this.taskRepository = taskRepository;
     }
 
-    void observeTaskList(LifecycleOwner lifecycleOwner, Observer<List<Task>> observer) {
-        taskList.observe(lifecycleOwner, observer);
-    }
 
-    public void loadTasks() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                final List<Task> tasks = taskRepository.findAllTasks();
-                // todo 自定义排序抽到工具类中
-                Collections.sort(tasks, new Comparator(){
-                    public int compare(Object obj1, Object obj2) {
-                        Task task1 = (Task) obj1;
-                        Task task2 = (Task) obj2;
-                        if(task1.isCompleted() != task2.isCompleted()) {
-                            return task1.isCompleted() ? 1 : -1;
-                        } else {
-                            return task1.getDeadline().compareTo(task2.getDeadline());
-                        }
+    public void save(Task task) {
+        taskRepository.save(task).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<Long>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        compositeDisposable.add(d);
+                    }
+
+                    @Override
+                    public void onSuccess(Long aLong) {
+                        Log.d(TAG, "save task successfully" + aLong);
+                        saveResult.postValue(true);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.d(TAG, "save task failure");
+                        saveResult.postValue(false);
                     }
                 });
-                taskList.postValue(tasks);
-            }
-        }).start();
+    }
+
+    public void update(Task task) {
+        taskRepository.update(task).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new MaybeObserver<Integer>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        compositeDisposable.add(d);
+                    }
+
+                    @Override
+                    public void onSuccess(Integer integer) {
+                        Log.d(TAG, "update task successfully" + integer);
+                        updateResult.postValue(true);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.d(TAG, "update task failure");
+                        updateResult.postValue(false);
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        Log.d(TAG, "update task complete");
+                    }
+                });
+    }
+
+    public void delete(Task task) {
+        taskRepository.delete(task).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new MaybeObserver<Integer>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        compositeDisposable.add(d);
+                    }
+
+                    @Override
+                    public void onSuccess(Integer integer) {
+                        Log.d(TAG, "delete task successfully" + integer);
+                        deleteResult.postValue(true);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.d(TAG, "delete task failure");
+                        deleteResult.postValue(false);
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        Log.d(TAG, "delete task complete");
+                    }
+                });
     }
 
     @Override
