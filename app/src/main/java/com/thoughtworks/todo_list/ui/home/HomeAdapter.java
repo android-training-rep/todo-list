@@ -29,6 +29,7 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ItemViewHolder
 
     public void setTasks(List<Task> tasks) {
         this.tasks = tasks;
+        this.notifyDataSetChanged();
     }
 
     @NonNull
@@ -54,7 +55,10 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ItemViewHolder
         holder.check.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                Log.d(TAG, "before:"+currentTask.isCompleted());
                 currentTask.setCompleted(!currentTask.isCompleted());
+                Log.d(TAG, "after:"+currentTask.isCompleted());
+
                 viewModel.setUpdateTask(currentTask);
             }
         });

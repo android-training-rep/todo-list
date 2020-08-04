@@ -17,6 +17,6 @@
     <string name="action_remind">Remind</string>
     <string name="plus">+</string>
     <string name="action_deadline">Deadline</string>
-    <string name="choose_deadline">Click to Choose Deadline</string>
     <string name="action_Exit">Exit</string>
+    <string name="deadline">Date</string>
 </resources>

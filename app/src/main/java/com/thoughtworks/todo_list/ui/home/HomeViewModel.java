@@ -15,8 +15,10 @@ import java.util.List;
 import java.util.Objects;
 
 import io.reactivex.CompletableObserver;
+import io.reactivex.MaybeObserver;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 public class HomeViewModel extends ViewModel {
     public static final String TAG = "TaskViewModel";
@@ -61,42 +63,67 @@ public class HomeViewModel extends ViewModel {
     }
 
     public void loadTasks() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                final List<Task> resp = taskRepository.findAllTasks();
-                // todo 自定义排序抽到工具类中
-                Collections.sort(resp, new Comparator(){
-                    public int compare(Object obj1, Object obj2) {
-                        Task task1 = (Task) obj1;
-                        Task task2 = (Task) obj2;
-                        if(task1.isCompleted() != task2.isCompleted()) {
-                            return task1.isCompleted() ? 1 : -1;
-                        } else {
-                            return task1.getDeadline().compareTo(task2.getDeadline());
-                        }
+        taskRepository.findAllTasks().subscribeOn(Schedulers.io())
+                .observeOn(Schedulers.io())
+                .subscribe(new MaybeObserver<List<Task>>() {
+
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        compositeDisposable.add(d);
+                    }
+
+                    @Override
+                    public void onSuccess(List<Task> resp) {
+                        Log.d(TAG, "on success");
+                        tasks.postValue(resp);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.d(TAG, "on error");
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        Log.d(TAG, "on complete");
                     }
                 });
-                tasks.postValue(resp);
-            }
-        }).start();
-    }
+                // todo 自定义排序抽到工具类中
+//                Collections.sort(resp, new Comparator(){
+//                    public int compare(Object obj1, Object obj2) {
+//                        Task task1 = (Task) obj1;
+//                        Task task2 = (Task) obj2;
+//                        if(task1.isCompleted() != task2.isCompleted()) {
+//                            return task1.isCompleted() ? 1 : -1;
+//                        } else {
+//                            return task1.getDeadline().compareTo(task2.getDeadline());
+//                        }
+//                    }
+//                });
 
+    }
+//Log.d(TAG, "update successfully");
+    //Log.d(TAG, "update failure");
     public void updateTask(Task task) {
-        this.taskRepository.update(task).subscribe(new CompletableObserver() {
+        this.taskRepository.update(task).subscribe(new MaybeObserver<Integer>() {
             @Override
             public void onSubscribe(Disposable d) {
                 compositeDisposable.add(d);
             }
 
             @Override
-            public void onComplete() {
+            public void onSuccess(Integer result) {
                 Log.d(TAG, "update successfully");
             }
 
             @Override
             public void onError(Throwable e) {
                 Log.d(TAG, "update failure");
+            }
+
+            @Override
+            public void onComplete() {
+                Log.d(TAG, "complete");
             }
         });
     }

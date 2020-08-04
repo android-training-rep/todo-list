@@ -61,6 +61,8 @@ public class HomeActivity extends AppCompatActivity {
             this.openTaskActivityWithExtra(task);
         });
         homeViewModel.getUpdateTask().observe(this, task -> {
+            Log.d(TAG, "after:"+task.isCompleted());
+
             this.updateTask(task);
         });
 

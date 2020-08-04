@@ -20,7 +20,7 @@ public class TaskRepositoryImpl implements TaskRepository {
         return dataSource.findById(id);
     }
 
-    public List<Task> findAllTasks() {
+    public Maybe<List<Task>> findAllTasks() {
         return dataSource.findAllTasks();
     }
 
@@ -28,11 +28,11 @@ public class TaskRepositoryImpl implements TaskRepository {
         return dataSource.save(task);
     }
 
-    public Completable update(Task task) {
+    public Maybe<Integer> update(Task task) {
         return dataSource.update(task);
     }
 
-    public Completable delete(Task task) {
+    public Maybe<Integer> delete(Task task) {
         return dataSource.delete(task);
     }
 }
