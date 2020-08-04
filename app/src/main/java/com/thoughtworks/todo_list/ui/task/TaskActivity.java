@@ -41,6 +41,7 @@ public class TaskActivity extends AppCompatActivity {
     private FloatingActionButton saveBtn, deleteBtn;
     private CalendarView calendarView;
 
+
     private TextView calendarSelected;
     private EditText contentView;
     private EditText titleEditText;
@@ -109,6 +110,14 @@ public class TaskActivity extends AppCompatActivity {
         });
 
         addListener();
+
+        ImageView goBack = findViewById(R.id.go_back);
+        goBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                openHomeActivity();
+            }
+        });
     }
 
     private void deleteTask() {

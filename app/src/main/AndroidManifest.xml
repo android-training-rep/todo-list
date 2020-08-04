@@ -11,7 +11,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".ui.task.TaskActivity"
-            android:parentActivityName=".ui.home.HomeActivity">
+            android:theme="@style/NoActionBar"
+            >
         </activity>
         <activity
             android:name=".ui.login.LoginActivity">
