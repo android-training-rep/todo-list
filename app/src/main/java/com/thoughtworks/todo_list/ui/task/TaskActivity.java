@@ -36,6 +36,7 @@ import io.reactivex.schedulers.Schedulers;
 public class TaskActivity extends AppCompatActivity {
     public final String TAG = this.getClass().getName();
     private TaskRepository taskRepository;
+    private Task existTask = null;
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
     private FloatingActionButton saveBtn;
     private TextView calendarSelected;
@@ -49,6 +50,8 @@ public class TaskActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_task);
+
+        initTask();
 
         configCustomActionBar();
 
@@ -97,6 +100,17 @@ public class TaskActivity extends AppCompatActivity {
                 saveTask();
             }
         });
+    }
+
+    private void initTask() {
+        Intent intent = getIntent();
+        String existTaskJson = intent.getStringExtra("exist");
+        existTask = new Gson().fromJson(existTaskJson, Task.class);
+
+        if (Objects.nonNull(existTask)) {
+            Log.d(TAG, "EXIST HAVE TASK");
+            // todo 视图初始化
+        }
     }
 
     private void configCustomActionBar() {

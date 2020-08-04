@@ -61,10 +61,18 @@ public class HomeActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(HomeActivity.this,TaskActivity.class);
-                startActivity(intent);
+                openTaskActivityWithExtra(null);
             }
         });
+    }
+
+    private openTaskActivityWithExtra(Task task) {
+        Intent intent = new Intent(this, TaskActivity.class);
+        if (Objects.nonNull(task)) {
+            String taskJson = new Gson().toJson(task);
+            intent.putExtra("exist", taskJson);
+        }
+        startActivity(intent);
     }
 
     private void configCustomActionBar() {
