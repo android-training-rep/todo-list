@@ -28,6 +28,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 public class HomeActivity extends AppCompatActivity {
@@ -36,7 +37,7 @@ public class HomeActivity extends AppCompatActivity {
     private TaskRepository taskRepository;
     private RecyclerView recyclerView;
     private RecyclerView.LayoutManager layoutManager;
-    private TextView todayView, countTaskView;
+    private TextView dayView, monthView, countTaskView;
     private HomeAdapter myAdapter;
     private HomeViewModel homeViewModel;
 
@@ -45,7 +46,7 @@ public class HomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activiey_home);
 
-        configCustomActionBar();
+//        configCustomActionBar();
 
         homeViewModel = obtainViewModel();
 
@@ -75,6 +76,23 @@ public class HomeActivity extends AppCompatActivity {
                 openTaskActivityWithExtra(null);
             }
         });
+
+        dayView = findViewById(R.id.day);
+        monthView = findViewById(R.id.month);
+        dayView.setText(toCurrentDayAndWeek());
+        monthView.setText(toCurrentMonth());
+        countTaskView = findViewById(R.id.count_task);
+
+
+    }
+
+    private String toCurrentDayAndWeek() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEEE,  dd", Locale.ENGLISH);
+        return dateFormat.format(new Date()).concat("th");
+    }
+
+    private String toCurrentMonth() {
+        return String.format(Locale.US, "%tB", new Date());
     }
 
     private void updateTask(Task task) {
@@ -107,23 +125,6 @@ public class HomeActivity extends AppCompatActivity {
         return homeViewModel;
     }
 
-    private void configCustomActionBar() {
-        // todo 修改 actionbar 和 menu 样式
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
-            actionBar.setCustomView(R.layout.home_action_bar);
-            actionBar.setDisplayHomeAsUpEnabled(true);
-
-            todayView = actionBar.getCustomView().findViewById(R.id.today);
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            todayView.setText(simpleDateFormat.format(new Date()));
-            countTaskView = actionBar.getCustomView().findViewById(R.id.count_task);
-        }else {
-            Log.d(TAG,"action bar is null");
-        }
-    }
-
     /* 数据库不可用时可先使用mock task */
     private List<Task> loadMockTasks() {
         List<Task> tasks = new ArrayList<Task>();
@@ -139,21 +140,21 @@ public class HomeActivity extends AppCompatActivity {
         return tasks;
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_home, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.action_exit) {
-            // todo 处理退出逻辑
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        getMenuInflater().inflate(R.menu.menu_home, menu);
+//        return true;
+//    }
+//
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        int id = item.getItemId();
+//        if (id == R.id.action_exit) {
+//            // todo 处理退出逻辑
+//            return true;
+//        }
+//
+//        return super.onOptionsItemSelected(item);
+//    }
 
 }
