@@ -1,7 +1,6 @@
 package com.thoughtworks.todo_list.ui.task;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.Observer;
@@ -175,20 +174,6 @@ public class TaskActivity extends AppCompatActivity {
             remindView.setImageResource(R.drawable.remind_selected);
         } else {
             remindView.setImageResource(R.drawable.remind_unselected);
-        }
-    }
-    
-    private void updateSaveButtonState(){
-        if(titleEditText.getText().toString() != "" && deadline != "") {
-            saveBtn.setEnabled(true);
-            ColorStateList colorStateList = ContextCompat.getColorStateList(getApplicationContext(), R.color.colorBlue);
-            saveBtn.setBackgroundTintMode(PorterDuff.Mode.SRC_ATOP);
-            saveBtn.setBackgroundTintList(colorStateList);
-        } else {
-            saveBtn.setEnabled(false);
-            ColorStateList colorStateList = ContextCompat.getColorStateList(getApplicationContext(), R.color.colorPrimary);
-            saveBtn.setBackgroundTintMode(PorterDuff.Mode.SRC_ATOP);
-            saveBtn.setBackgroundTintList(colorStateList);
         }
     }
 
