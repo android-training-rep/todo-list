@@ -110,7 +110,31 @@ public class TaskViewModel extends ViewModel {
     }
 
     public void delete(Task task) {
+        taskRepository.delete(task).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new MaybeObserver<Integer>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        compositeDisposable.add(d);
+                    }
 
+                    @Override
+                    public void onSuccess(Integer integer) {
+                        Log.d(TAG, "delete task successfully" + integer);
+                        deleteResult.postValue(true);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.d(TAG, "delete task failure");
+                        deleteResult.postValue(false);
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        Log.d(TAG, "delete task complete");
+                    }
+                });
     }
 
     @Override

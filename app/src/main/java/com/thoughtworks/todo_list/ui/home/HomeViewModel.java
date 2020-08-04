@@ -5,7 +5,6 @@ import android.util.Log;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
-
 import com.thoughtworks.todo_list.repository.task.TaskRepository;
 import com.thoughtworks.todo_list.repository.task.entity.Task;
 
@@ -13,8 +12,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-
-import io.reactivex.CompletableObserver;
 import io.reactivex.MaybeObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
@@ -76,7 +73,7 @@ public class HomeViewModel extends ViewModel {
                     @Override
                     public void onSuccess(List<Task> resp) {
                         Log.d(TAG, "on success");
-                        tasks.postValue(resp);
+                        tasks.postValue(customSort(resp));
                     }
 
                     @Override
@@ -89,20 +86,24 @@ public class HomeViewModel extends ViewModel {
                         Log.d(TAG, "on complete");
                     }
                 });
-                // todo 自定义排序抽到工具类中
-//                Collections.sort(resp, new Comparator(){
-//                    public int compare(Object obj1, Object obj2) {
-//                        Task task1 = (Task) obj1;
-//                        Task task2 = (Task) obj2;
-//                        if(task1.isCompleted() != task2.isCompleted()) {
-//                            return task1.isCompleted() ? 1 : -1;
-//                        } else {
-//                            return task1.getDeadline().compareTo(task2.getDeadline());
-//                        }
-//                    }
-//                });
-
     }
+
+    // todo 修改排序规则
+    private List<Task> customSort(List<Task> tasks) {
+        Collections.sort(tasks, new Comparator(){
+            public int compare(Object obj1, Object obj2) {
+                        Task task1 = (Task) obj1;
+                        Task task2 = (Task) obj2;
+                        if(task1.isCompleted() != task2.isCompleted()) {
+                            return task1.isCompleted() ? 1 : -1;
+                        } else {
+                            return task1.getDeadline().compareTo(task2.getDeadline());
+                        }
+                    }
+                });
+        return tasks;
+    }
+
     public void updateTask(Task task) {
         taskRepository.update(task).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())

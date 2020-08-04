@@ -7,6 +7,7 @@ import androidx.core.content.ContextCompat;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.PorterDuff;
@@ -38,7 +39,7 @@ public class TaskActivity extends AppCompatActivity {
     private TaskViewModel taskViewModel;
     private Task existTask = null;
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
-    private FloatingActionButton saveBtn;
+    private FloatingActionButton saveBtn, deleteBtn;
     private CalendarView calendarView;
 
     private TextView calendarSelected;
@@ -88,9 +89,11 @@ public class TaskActivity extends AppCompatActivity {
         calendarSelected = findViewById(R.id.deadline);
         titleEditText = findViewById(R.id.title);
         contentView = findViewById(R.id.content);
+        deleteBtn = findViewById(R.id.delete_task);
+        saveBtn = findViewById(R.id.save_task);
+
         initTask();
 
-        saveBtn = findViewById(R.id.save_task);
         updateSaveButtonState();
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -99,7 +102,18 @@ public class TaskActivity extends AppCompatActivity {
             }
         });
 
+        deleteBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                deleteTask();
+            }
+        });
+
         addListener();
+    }
+
+    private void deleteTask() {
+        taskViewModel.delete(existTask);
     }
 
     private void addListener() {
@@ -169,6 +183,7 @@ public class TaskActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    @SuppressLint("RestrictedApi")
     private void initTask() {
         Intent intent = getIntent();
         String existTaskJson = intent.getStringExtra("exist");
@@ -182,6 +197,9 @@ public class TaskActivity extends AppCompatActivity {
             calendarSelected.setText(existTask.getDeadline());
             isCompletedView.setChecked(existTask.isCompleted());
             setIsRemindBackground(isRemind);
+            deleteBtn.setVisibility(View.VISIBLE);
+        } else {
+            deleteBtn.setVisibility(View.GONE);
         }
     }
 
