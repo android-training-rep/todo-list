@@ -57,7 +57,6 @@ public class TaskActivity extends AppCompatActivity {
 
         TaskViewModel taskViewModel = obtainViewModel();
 
-
         // todo 使calendar逻辑生效
         calendarView = (CalendarView) findViewById(R.id.calendar);
         calendarView.setVisibility(View.GONE);

@@ -18,39 +18,49 @@ import io.reactivex.disposables.CompositeDisposable;
 
 public class TaskViewModel extends ViewModel {
     public static final String TAG = "TaskViewModel";
-    private MutableLiveData<List<Task>> taskList = new MutableLiveData<List<Task>>();
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private MutableLiveData<Boolean> saveResult;
+    private MutableLiveData<Boolean> updateResult;
+    private MutableLiveData<Boolean> deleteResult;
 
     private TaskRepository taskRepository;
+
+    public LiveData<Boolean> getSaveResult() {
+        if (Objects.isNull(saveResult)) {
+            saveResult = new MutableLiveData<>();
+        }
+        return saveResult;
+    }
+
+    public LiveData<Boolean> getUpdateResult() {
+        if (Objects.isNull(updateResult)) {
+            updateResult = new MutableLiveData<>();
+        }
+        return updateResult;
+    }
+
+    public LiveData<Boolean> getDeleteResult() {
+        if (Objects.isNull(deleteResult)) {
+            deleteResult = new MutableLiveData<>();
+        }
+        return deleteResult;
+    }
 
     void setTaskRepository(TaskRepository taskRepository) {
         this.taskRepository = taskRepository;
     }
 
-    void observeTaskList(LifecycleOwner lifecycleOwner, Observer<List<Task>> observer) {
-        taskList.observe(lifecycleOwner, observer);
+
+    public void save(Task task) {
+
     }
 
-    public void loadTasks() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                final List<Task> tasks = taskRepository.findAllTasks();
-                // todo 自定义排序抽到工具类中
-                Collections.sort(tasks, new Comparator(){
-                    public int compare(Object obj1, Object obj2) {
-                        Task task1 = (Task) obj1;
-                        Task task2 = (Task) obj2;
-                        if(task1.isCompleted() != task2.isCompleted()) {
-                            return task1.isCompleted() ? 1 : -1;
-                        } else {
-                            return task1.getDeadline().compareTo(task2.getDeadline());
-                        }
-                    }
-                });
-                taskList.postValue(tasks);
-            }
-        }).start();
+    public void update(Task task) {
+
+    }
+
+    public void delete(Task task) {
+
     }
 
     @Override
